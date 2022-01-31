@@ -1,0 +1,16 @@
+server:
+  port: 64412 # 서버의 포트 번호, 위와 동일하다
+
+spring:
+  application:
+    name: user-service # 애플리케이션 서버의 이름 , 위와 동일하다
+
+eureka:
+  instance:
+    instance-id: user-microservice-instance #유레카가 인식할 instance id 인데 대쉬보드에서 식별하는 용도로 사용된다.
+
+  client:
+    register-with-eureka: true  # 이번에는 해당 서비스가 클라이언트로 인식되어야 하므로 true로 해주자
+    fetch-registry: true  # 이번에는 해당 서비스가 클라이언트로 인식되어야 하므로 true로 해주자
+    service-url:
+      defaultZone: http://localhost:8761/eureka # eureka server 가 위치하고 있는 기본 주소를 적어줄 수 있다.
