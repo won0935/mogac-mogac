@@ -48,13 +48,13 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
 
   datasource:
     url: jdbc:mysql://localhost:3306/mogac-mogac?serverTimezone=UTC&characterEncoding=UTF-8
     hikari:
       driver-class-name: com.mysql.cj.jdbc.Driver
-      username: root
+      username: mogac
       password: 1234
 
 #eureka:
