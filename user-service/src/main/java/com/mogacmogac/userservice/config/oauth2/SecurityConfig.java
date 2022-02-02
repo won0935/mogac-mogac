@@ -1,9 +1,8 @@
 package com.mogacmogac.userservice.config.oauth2;
 
 import com.mogacmogac.userservice.common.oauth2.CustomOAuth2UserService;
-import com.mogacmogac.userservice.domain.user.User;
+import com.mogacmogac.userservice.domain.login.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -16,24 +15,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        super.configure(http);
-
-        http
-                .csrf().disable()
-                .headers().frameOptions().disable() // h2-console 화면을 사용하기 위해 해당 옵션 disable
-                .and()
-                .authorizeRequests()// URL별 권한 권리
-//                .antMatchers("/", "/css/**", "/images/**", "/js/**", "/h2-console/**").permitAll()
-//                .antMatchers("/api/v1/**").hasRole(User.Role.USER.name()) // /api/v1/** 은 USER권한만 접근 가능
-//                .anyRequest().authenticated() // anyRequest : 설정된 값들 이외 나머지 URL 나타냄, authenticated : 인증된 사용자
-                .and()
-                .logout()
-                .logoutSuccessUrl("/")
-                .and()
-                .oauth2Login()
-                .userInfoEndpoint() // oauth2 로그인 성공 후 가져올 때의 설정들
-                // 소셜로그인 성공 시 후속 조치를 진행할 UserService 인터페이스 구현체 등록
-                .userService(customOAuth2UserService); // 리소스 서버에서 사용자 정보를 가져온 상태에서 추가로 진행하고자 하는 기능 명시
-        ;
+        http.csrf().disable()
+                .headers().frameOptions().disable().and()
+                //authorizeRequests -> URL별 권한 관리 설정 옵션 시작점
+                //antMatchers에 지정된 url들은 전체 열람 권한 줌
+                .authorizeRequests().antMatchers("/", "/css/**", "/img/**", "/js/**", "/h2-console/**").permitAll()
+                .antMatchers("/user").hasRole(User.Role.USER.name())
+                .anyRequest().authenticated().and() //anyRequest 나머지 url들을 나타냄, authenticated 인증된 경우만 허용
+                .logout().logoutSuccessUrl("/").and() //로그아웃 기능 설정 진입점, 로그아웃 성공 시 /로 이동
+                .oauth2Login().userInfoEndpoint().userService(customOAuth2UserService); //로그인 기능 설정 진입점, 소셜 로그인 성공 시 후속 조치 진행 Service 인터페이스 구현체 등록
     }
 }

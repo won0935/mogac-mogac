@@ -1,7 +1,7 @@
 package com.mogacmogac.userservice.common.oauth2;
 
-import com.mogacmogac.userservice.domain.user.User;
-import com.mogacmogac.userservice.domain.user.UserRepository;
+import com.mogacmogac.userservice.domain.login.User;
+import com.mogacmogac.userservice.domain.login.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -20,28 +20,47 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     private final UserRepository userRepository;
     private final HttpSession httpSession;
 
+    /**
+     * Provider에게 유저 정보를 반환하고, 세션에 유저 정보를 저장
+     * @param userRequest
+     * @return
+     * @throws OAuth2AuthenticationException
+     */
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate = new DefaultOAuth2UserService();
         OAuth2User oAuth2User = delegate.loadUser(userRequest);
 
-        // OAuth2 서비스 id (구글, 카카오, 네이버)
+        //어떤 로그인 서비스인지 구분하는 코드, 구글, 네이버 등 구분하기 위해 사용
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
-        // OAuth2 로그인 진행 시 키가 되는 필드 값(PK)
+
+        //primary key를 의미, 구글은 기본 지원
         String userNameAttributeName = userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
 
-        // OAuth2UserService
+        // OAuth2UserService를 통해 가져온 OAuth2User의 attribute를 담을 클래스
         OAuthAttributes attributes = OAuthAttributes.of(registrationId, userNameAttributeName, oAuth2User.getAttributes());
         User user = saveOrUpdate(attributes);
-        httpSession.setAttribute("user", new SessionUser(user)); // SessionUser (직렬화된 dto 클래스 사용)
 
-        return new DefaultOAuth2User(Collections.singleton(new SimpleGrantedAuthority(user.getRoleKey())),
+        //세션에 사용자 정보를 저장하기 위한 dto 클래스
+        httpSession.setAttribute("member", new SessionUser(user));
+
+        return new DefaultOAuth2User(
+                Collections.singleton(new SimpleGrantedAuthority(user.getRoleKey())),
                 attributes.getAttributes(),
-                attributes.getNameAttributeKey());
+                attributes.getNameAttributeKey()
+        );
     }
 
-    // 유저 생성 및 수정 서비스 로직
-    private User saveOrUpdate(OAuthAttributes attributes){
+
+    /**
+     * TODO: 이름에 해당하는 유저가 있으면 업데이트하고, 없을 경우 입력함.
+     * email이 아니라 바뀔 수 있는 이름을 키로 잡은 이유는 카카오 같은 경우 이메일 없이도 가입이 가능하고,
+     * 깃허브 같은 경우는 이메일을 반환하지 않아서, 예제 처리를 위해서 일단 공통으로 모두 무조건 반환하는 이름을 통해
+     * 처리를 했음.
+     * @param attributes
+     * @return
+     */
+    private User saveOrUpdate(OAuthAttributes attributes) {
         User user = userRepository.findByEmail(attributes.getEmail())
                 .map(entity -> entity.update(attributes.getName(), attributes.getPicture()))
                 .orElse(attributes.toEntity());

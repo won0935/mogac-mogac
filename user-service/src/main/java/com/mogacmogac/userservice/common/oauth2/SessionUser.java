@@ -1,6 +1,6 @@
 package com.mogacmogac.userservice.common.oauth2;
 
-import com.mogacmogac.userservice.domain.user.User;
+import com.mogacmogac.userservice.domain.login.User;
 import lombok.Getter;
 
 import java.io.Serializable;
