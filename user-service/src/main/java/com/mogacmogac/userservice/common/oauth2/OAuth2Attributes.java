@@ -9,7 +9,7 @@ import java.util.Map;
 
 @Log4j2
 @Getter
-public class OAuthAttributes {
+public class OAuth2Attributes {
     private Map<String, Object> attributes;
     private String nameAttributeKey;
     private String name;
@@ -18,7 +18,7 @@ public class OAuthAttributes {
     private String registrationId;
 
     @Builder
-    public OAuthAttributes(Map<String, Object> attributes, String nameAttributeKey, String name, String email, String picture, String registrationId){
+    public OAuth2Attributes(Map<String, Object> attributes, String nameAttributeKey, String name, String email, String picture, String registrationId){
         this.attributes = attributes;
         this.nameAttributeKey = nameAttributeKey;
         this.name = name;
@@ -34,7 +34,7 @@ public class OAuthAttributes {
      * @param attributes 각 플랫폼에서 반환받은 유저 정보
      * @return 인증 객체
      */
-    public static OAuthAttributes of(String registrationId, String userNameAttributeName, Map<String, Object> attributes) {
+    public static OAuth2Attributes of(String registrationId, String userNameAttributeName, Map<String, Object> attributes) {
         log.info("요청 :: "+registrationId);
         log.info("유저이름 :: "+userNameAttributeName);
         log.info("속성 :: "+attributes);
@@ -53,8 +53,8 @@ public class OAuthAttributes {
                 throw new IllegalArgumentException("해당 로그인을 찾을 수 없습니다.");
         }
     }
-    private static OAuthAttributes ofFacebook(String registrationId, String userNameAttributeName, Map<String, Object> attributes){
-        return OAuthAttributes.builder()
+    private static OAuth2Attributes ofFacebook(String registrationId, String userNameAttributeName, Map<String, Object> attributes){
+        return OAuth2Attributes.builder()
                 .name((String) attributes.get("name"))
                 .email((String) attributes.get("email"))
                 .picture((String) attributes.get("avatar_url"))
@@ -63,8 +63,8 @@ public class OAuthAttributes {
                 .registrationId(registrationId)
                 .build();
     }
-    private static OAuthAttributes ofGithub(String registrationId, String userNameAttributeName, Map<String, Object> attributes){
-        return OAuthAttributes.builder()
+    private static OAuth2Attributes ofGithub(String registrationId, String userNameAttributeName, Map<String, Object> attributes){
+        return OAuth2Attributes.builder()
                 .name((String) attributes.get("name"))
                 .email((String) attributes.get("email"))
                 .picture((String) attributes.get("avatar_url"))
@@ -73,10 +73,10 @@ public class OAuthAttributes {
                 .registrationId(registrationId)
                 .build();
     }
-    private static OAuthAttributes ofKakao(String registrationId, String userNameAttributeName, Map<String, Object> attributes){
+    private static OAuth2Attributes ofKakao(String registrationId, String userNameAttributeName, Map<String, Object> attributes){
         Map<String, Object> properties = (Map<String, Object>) attributes.get("properties");
         properties.put("id", attributes.get("id"));
-        return OAuthAttributes.builder()
+        return OAuth2Attributes.builder()
                 .name((String) properties.get("nickname"))
                 .email((String) properties.get("email"))
                 .picture((String) properties.get("profile_image"))
@@ -85,8 +85,8 @@ public class OAuthAttributes {
                 .registrationId(registrationId)
                 .build();
     }
-    private static OAuthAttributes ofGoogle(String registrationId, String userNameAttributeName, Map<String, Object> attributes){
-        return OAuthAttributes.builder()
+    private static OAuth2Attributes ofGoogle(String registrationId, String userNameAttributeName, Map<String, Object> attributes){
+        return OAuth2Attributes.builder()
                 .name((String) attributes.get("name"))
                 .email((String) attributes.get("email"))
                 .picture((String) attributes.get("picture"))
@@ -95,10 +95,10 @@ public class OAuthAttributes {
                 .registrationId(registrationId)
                 .build();
     }
-    private static OAuthAttributes ofNaver(String registrationId, String userNameAttributeName, Map<String, Object> attributes){
+    private static OAuth2Attributes ofNaver(String registrationId, String userNameAttributeName, Map<String, Object> attributes){
         Map<String, Object> response = (Map<String, Object>) attributes.get("response");
 
-        return OAuthAttributes.builder()
+        return OAuth2Attributes.builder()
                 .name((String) response.get("name"))
                 .email((String) response.get("email"))
                 .picture((String) response.get("profile_image"))

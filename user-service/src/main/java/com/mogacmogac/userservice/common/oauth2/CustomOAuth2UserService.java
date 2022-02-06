@@ -3,6 +3,7 @@ package com.mogacmogac.userservice.common.oauth2;
 import com.mogacmogac.userservice.domain.login.User;
 import com.mogacmogac.userservice.domain.login.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -14,6 +15,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import javax.servlet.http.HttpSession;
 import java.util.Collections;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
@@ -38,11 +40,10 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         String userNameAttributeName = userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
 
         // OAuth2UserService를 통해 가져온 OAuth2User의 attribute를 담을 클래스
-        OAuthAttributes attributes = OAuthAttributes.of(registrationId, userNameAttributeName, oAuth2User.getAttributes());
+        OAuth2Attributes attributes = OAuth2Attributes.of(registrationId, userNameAttributeName, oAuth2User.getAttributes());
         User user = saveOrUpdate(attributes);
 
-        //세션에 사용자 정보를 저장하기 위한 dto 클래스
-        httpSession.setAttribute("member", new SessionUser(user));
+        log.info("{}", attributes);
 
         return new DefaultOAuth2User(
                 Collections.singleton(new SimpleGrantedAuthority(user.getRoleKey())),
@@ -60,7 +61,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
      * @param attributes
      * @return
      */
-    private User saveOrUpdate(OAuthAttributes attributes) {
+    private User saveOrUpdate(OAuth2Attributes attributes) {
         User user = userRepository.findByEmail(attributes.getEmail())
                 .map(entity -> entity.update(attributes.getName(), attributes.getPicture()))
                 .orElse(attributes.toEntity());
